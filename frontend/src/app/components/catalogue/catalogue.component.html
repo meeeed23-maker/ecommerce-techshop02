@@ -1,0 +1,70 @@
+<div class="catalogue-page">
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Découvrez nos <span class="gradient-text">Produits</span></h1>
+      <p>La technologie de demain, disponible aujourd'hui</p>
+    </div>
+    <div class="search-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearch()"
+        placeholder="🔍 Rechercher un produit..."
+        class="search-input"
+      />
+    </div>
+  </section>
+
+  <div class="toast" [class.show]="showToast">
+    ✅ {{ toastMessage }}
+  </div>
+
+  <section class="products-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>{{ filteredProducts.length }} produit{{ filteredProducts.length > 1 ? 's' : '' }}</h2>
+      </div>
+
+      <div *ngIf="loading" class="loading-grid">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+      </div>
+
+      <div *ngIf="!loading" class="products-grid">
+        <div *ngFor="let product of filteredProducts" class="product-card">
+          <div class="card-image-wrapper">
+            <img
+              [src]="product.imageUrl || 'https://via.placeholder.com/400x300?text=Produit'"
+              [alt]="product.nom"
+              class="card-image"
+              (error)="onImgError($event)"
+            />
+            <div class="stock-badge" [class.low]="product.stock <= 5" [class.out]="product.stock === 0">
+              {{ product.stock === 0 ? 'Rupture' : product.stock <= 5 ? 'Derniers ' + product.stock : '✓ En stock' }}
+            </div>
+          </div>
+
+          <div class="card-body">
+            <h3 class="card-title">{{ product.nom }}</h3>
+            <p class="card-desc">{{ product.description }}</p>
+
+            <div class="card-footer">
+              <span class="price">{{ product.prix | currency:'EUR':'symbol':'1.2-2':'fr-FR' }}</span>
+              <button
+                class="add-btn"
+                [disabled]="product.stock === 0"
+                (click)="addToCart(product)"
+              >
+                {{ product.stock === 0 ? 'Épuisé' : 'Ajouter 🛒' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && filteredProducts.length === 0" class="empty-state">
+        <span class="empty-icon">📦</span>
+        <p>Aucun produit trouvé</p>
+      </div>
+    </div>
+  </section>
+</div>
