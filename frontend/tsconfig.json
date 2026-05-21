@@ -28,11 +28,3 @@
     "strictTemplates": true
   }
 }
-EOFcat > frontend/proxy.conf.json << 'EOF'
-{
-  "/api": {
-    "target": "http://localhost:8080",
-    "secure": false,
-    "changeOrigin": true
-  }
-}
