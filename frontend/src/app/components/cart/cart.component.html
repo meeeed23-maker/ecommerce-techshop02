@@ -1,0 +1,87 @@
+<div class="cart-page">
+  <div class="container">
+    <div class="page-header">
+      <h1>Mon Panier <span class="gradient-text">🛒</span></h1>
+      <a routerLink="/" class="back-link">← Continuer mes achats</a>
+    </div>
+
+    <div *ngIf="orderConfirmed" class="success-banner">
+      <div class="success-icon">🎉</div>
+      <div>
+        <h3>{{ confirmationMessage }}</h3>
+        <p>Commande #{{ orderId }} | Total: {{ orderTotal | currency:'EUR':'symbol':'1.2-2':'fr-FR' }}</p>
+      </div>
+    </div>
+
+    <div *ngIf="!orderConfirmed && items.length === 0" class="empty-cart">
+      <span class="empty-icon">🛒</span>
+      <h2>Votre panier est vide</h2>
+      <p>Découvrez nos produits et commencez vos achats</p>
+      <a routerLink="/" class="btn-primary">Voir le catalogue</a>
+    </div>
+
+    <div *ngIf="!orderConfirmed && items.length > 0" class="cart-layout">
+      <div class="cart-items">
+        <div *ngFor="let item of items" class="cart-item">
+          <img
+            [src]="item.product.imageUrl || 'https://via.placeholder.com/80'"
+            [alt]="item.product.nom"
+            class="item-image"
+            (error)="onImgError($event)"
+          />
+
+          <div class="item-details">
+            <h3>{{ item.product.nom }}</h3>
+            <p class="item-price">{{ item.product.prix | currency:'EUR':'symbol':'1.2-2':'fr-FR' }} / unité</p>
+          </div>
+
+          <div class="quantity-controls">
+            <button (click)="decrement(item)" class="qty-btn">−</button>
+            <span class="qty-display">{{ item.quantite }}</span>
+            <button
+              (click)="increment(item)"
+              [disabled]="item.quantite >= item.product.stock"
+              class="qty-btn"
+            >+</button>
+          </div>
+
+          <div class="item-subtotal">
+            {{ (item.product.prix * item.quantite) | currency:'EUR':'symbol':'1.2-2':'fr-FR' }}
+          </div>
+
+          <button (click)="remove(item)" class="remove-btn" title="Supprimer">✕</button>
+        </div>
+      </div>
+
+      <div class="order-summary">
+        <h2>Récapitulatif</h2>
+
+        <div class="summary-rows">
+          <div *ngFor="let item of items" class="summary-row">
+            <span>{{ item.product.nom }} × {{ item.quantite }}</span>
+            <span>{{ (item.product.prix * item.quantite) | currency:'EUR':'symbol':'1.2-2':'fr-FR' }}</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <strong>{{ cartService.total | currency:'EUR':'symbol':'1.2-2':'fr-FR' }}</strong>
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-msg">⚠️ {{ errorMessage }}</div>
+
+        <button
+          (click)="validateOrder()"
+          [disabled]="isLoading"
+          class="validate-btn"
+        >
+          {{ isLoading ? 'Traitement...' : '✅ Valider la commande' }}
+        </button>
+
+        <button (click)="clearCart()" class="clear-btn">
+          🗑 Vider le panier
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <span class="auth-icon">⚡</span>
+      <h1>Connexion</h1>
+      <p>Accédez à votre compte TechShop</p>
+    </div>
+
+    <div class="demo-hint">
+      <strong>Comptes de démo :</strong><br>
+      Admin: <code>admin</code> / <code>admin123</code><br>
+      User: <code>user</code> / <code>user123</code>
+    </div>
+
+    <form (ngSubmit)="login()">
+      <div class="form-group">
+        <label>Nom d'utilisateur</label>
+        <input
+          type="text"
+          [(ngModel)]="username"
+          name="username"
+          placeholder="Votre identifiant"
+          required
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Votre mot de passe"
+          required
+          class="form-input"
+        />
+      </div>
+
+      <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+      <button type="submit" [disabled]="isLoading" class="submit-btn">
+        {{ isLoading ? 'Connexion...' : 'Se connecter' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Pas encore de compte ?
+      <a routerLink="/register">S'inscrire</a>
+    </p>
+  </div>
+</div>

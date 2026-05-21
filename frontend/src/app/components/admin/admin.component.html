@@ -1,0 +1,101 @@
+<div class="admin-page">
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1>👑 Dashboard Admin</h1>
+        <p>{{ products.length }} produit{{ products.length > 1 ? 's' : '' }} dans le catalogue</p>
+      </div>
+      <button (click)="openModal()" class="btn-add">+ Nouveau produit</button>
+    </div>
+
+    <div class="toast" [class.show]="showToast" [class.error]="toastType === 'error'">
+      {{ toastMessage }}
+    </div>
+
+    <div class="table-wrapper">
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Description</th>
+            <th>Prix</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of products" class="table-row">
+            <td class="product-cell">
+              <img [src]="product.imageUrl" [alt]="product.nom" class="product-thumb"
+                (error)="onImgError($event)" />
+              <span>{{ product.nom }}</span>
+            </td>
+            <td class="desc-cell">{{ product.description | slice:0:60 }}...</td>
+            <td class="price-cell">{{ product.prix | currency:'EUR':'symbol':'1.2-2':'fr-FR' }}</td>
+            <td>
+              <span class="stock-tag" [class.low]="product.stock <= 5" [class.out]="product.stock === 0">
+                {{ product.stock }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <button (click)="openModal(product)" class="btn-edit">✏️ Éditer</button>
+              <button (click)="deleteProduct(product)" class="btn-delete">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="showModal" class="modal-backdrop" (click)="closeModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ editingProduct?.id ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+          <button (click)="closeModal()" class="modal-close">✕</button>
+        </div>
+
+        <form (ngSubmit)="saveProduct()" class="modal-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom *</label>
+              <input type="text" [(ngModel)]="form.nom" name="nom"
+                required class="form-input" placeholder="Nom du produit" />
+            </div>
+            <div class="form-group">
+              <label>Prix (€) *</label>
+              <input type="number" [(ngModel)]="form.prix" name="prix"
+                required min="0" step="0.01" class="form-input" placeholder="0.00" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="form.description" name="description"
+              class="form-input" rows="3" placeholder="Description du produit"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>URL Image</label>
+              <input type="url" [(ngModel)]="form.imageUrl" name="imageUrl"
+                class="form-input" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Stock *</label>
+              <input type="number" [(ngModel)]="form.stock" name="stock"
+                required min="0" class="form-input" placeholder="0" />
+            </div>
+          </div>
+
+          <div *ngIf="modalError" class="error-msg">{{ modalError }}</div>
+
+          <div class="modal-footer">
+            <button type="button" (click)="closeModal()" class="btn-cancel">Annuler</button>
+            <button type="submit" [disabled]="isSaving" class="btn-save">
+              {{ isSaving ? 'Sauvegarde...' : (editingProduct?.id ? 'Modifier' : 'Créer') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
