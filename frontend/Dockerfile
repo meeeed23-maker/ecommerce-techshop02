@@ -1,7 +1,8 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+# Utiliser npm install au lieu de npm ci (car package-lock.json peut être absent)
+RUN npm install
 COPY . .
 RUN npm run build -- --configuration=production
 
