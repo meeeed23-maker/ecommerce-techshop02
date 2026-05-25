@@ -32,7 +32,7 @@ jobs:
       - name: Run Frontend Tests
         run: |
           cd frontend
-          npm test -- --watch=false --browsers=ChromeHeadless
+          ng test --no-watch --code-coverage --browsers=ChromeHeadless
 
   build-docker:
     needs: [test-backend, test-frontend]
