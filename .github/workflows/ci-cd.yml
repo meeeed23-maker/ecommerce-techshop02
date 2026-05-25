@@ -29,10 +29,12 @@ jobs:
         run: |
           cd frontend
           npm install --legacy-peer-deps
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
       - name: Run Frontend Tests
         run: |
           cd frontend
-          ng test --no-watch --code-coverage --browsers=ChromeHeadless
+          ng test --no-watch --browsers=ChromeHeadless
 
   build-docker:
     needs: [test-backend, test-frontend]
