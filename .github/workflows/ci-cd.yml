@@ -1,49 +1,67 @@
-  name: CI/CD Pipeline
+name: CI/CD Pipeline
 
-  on:
-    push:
-      branches: [main, develop]
-    pull_request:
-      branches: [main]
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
 
-  jobs:
-    test-backend:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - uses: actions/setup-java@v4
-          with:
-            java-version: '17'
-            distribution: 'temurin'
-        - name: Run Backend Tests
-          run: cd backend && mvn test
+jobs:
+  # Job 1 : Tests Backend
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Run Backend Tests
+        run: cd backend && mvn test
 
-    build-docker:
-      needs: test-backend
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - name: Build Backend Image
-          run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-backend:test ./backend
-        - name: Build Frontend Image
-          run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend:test ./frontend
+  # Job 2 : Tests Frontend (NOUVEAU)
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: cd frontend && npm ci
+      - name: Run Frontend Tests
+        # '-- --watch=false' permet de lancer les tests une seule fois
+        # '--browsers=ChromeHeadless' permet de tourner sans interface graphique
+        run: cd frontend && npm test -- --watch=false --browsers=ChromeHeadless
 
-    push-docker:
-      needs: build-docker
-      if: github.ref == 'refs/heads/main'
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - name: Login to Docker Hub
-          uses: docker/login-action@v3
-          with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_TOKEN }}
-        - name: Build and Push Backend
-          run: |
-            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-backend:latest ./backend
-            docker push ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-backend:latest
-        - name: Build and Push Frontend
-          run: |
-            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend:latest ./frontend
-            docker push ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend:latest
+  # Job 3 : Build Docker (dépend désormais des deux tests)
+  build-docker:
+    needs: [test-backend, test-frontend]  # <-- Changement important
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Backend Image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-backend:test ./backend
+      - name: Build Frontend Image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend:test ./frontend
+
+  # Job 4 : Push Docker (inchangé)
+  push-docker:
+    needs: build-docker
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and Push Backend
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-backend:latest ./backend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-backend:latest
+      - name: Build and Push Frontend
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend:latest ./frontend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend:latest
