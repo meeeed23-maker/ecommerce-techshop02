@@ -7,7 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  # Job 1 : Tests Backend
   test-backend:
     runs-on: ubuntu-latest
     steps:
@@ -19,7 +18,6 @@ jobs:
       - name: Run Backend Tests
         run: cd backend && mvn test
 
-  # Job 2 : Tests Frontend (NOUVEAU)
   test-frontend:
     runs-on: ubuntu-latest
     steps:
@@ -28,15 +26,16 @@ jobs:
         with:
           node-version: '20'
       - name: Install dependencies
-        run: cd frontend && npm ci
+        run: |
+          cd frontend
+          npm install --legacy-peer-deps
       - name: Run Frontend Tests
-        # '-- --watch=false' permet de lancer les tests une seule fois
-        # '--browsers=ChromeHeadless' permet de tourner sans interface graphique
-        run: cd frontend && npm test -- --watch=false --browsers=ChromeHeadless
+        run: |
+          cd frontend
+          npm test -- --watch=false --browsers=ChromeHeadless
 
-  # Job 3 : Build Docker (dépend désormais des deux tests)
   build-docker:
-    needs: [test-backend, test-frontend]  # <-- Changement important
+    needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,7 +44,6 @@ jobs:
       - name: Build Frontend Image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend:test ./frontend
 
-  # Job 4 : Push Docker (inchangé)
   push-docker:
     needs: build-docker
     if: github.ref == 'refs/heads/main'
